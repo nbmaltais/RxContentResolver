@@ -1,0 +1,43 @@
+{
+	"documentation": "A human being which is part of a team.",
+	"fields": [
+		{
+			"documentation": "First name of this person. For instance, John.",
+			"name": "first_name",
+			"type": "String",
+			"defaultValue": "John"
+		},
+		{
+			"documentation": "Last name (a.k.a. Given name) of this person. For instance, Smith.",
+			"name": "last_name",
+			"type": "String",
+			"nullable": true,
+			"defaultValue": "Doe"
+		},
+		{
+			"name": "age",
+			"type": "Integer",
+			"index": true
+		},
+		{
+			"name": "gender",
+			"type": "enum",
+			"enumName": "Gender",
+			"enumValues": [
+				"MALE",
+				"FEMALE",
+				{"OTHER": "Value to use when neither male nor female"}
+			],
+			"nullable": false
+		}
+	],
+
+	"constraints": [
+		{
+			"name": "unique_name",
+			"definition": "UNIQUE (first_name, last_name) ON CONFLICT REPLACE"
+		}
+	],
+	
+	"defaultOrder": "first_name, last_name, age DESC"
+}
