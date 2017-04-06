@@ -19,7 +19,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ca.nbsoft.rxcontentresolver.QueryToList;
+import ca.nbsoft.rxcontentresolver.QueryToListOperator;
 import ca.nbsoft.rxcontentresolver.RxContentResolver;
 import ca.nbsoft.rxcontentresolver.sample.R;
 import ca.nbsoft.rxcontentresolver.sample.provider.person.Gender;
@@ -39,8 +39,6 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
-
-import static android.R.id.message;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -173,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
     static Observable<List<PersonBean>> queryPerson(RxContentResolver contentResolver, PersonSelection sel) {
 
         return contentResolver.createQuery(sel.uri(), PersonColumns.ALL_COLUMNS, sel.sel(), sel.args(), sel.order(), true)
-                .mapToList(new QueryToList.MapperToList<PersonBean>() {
+                .mapToList(new QueryToListOperator.MapperToList<PersonBean>() {
                     @Override
                     public List<PersonBean> apply(@NonNull Cursor cursor) throws Exception {
                         return mapToPerson(new PersonCursor(cursor));
