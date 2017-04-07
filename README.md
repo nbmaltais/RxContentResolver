@@ -1,4 +1,5 @@
-# RxContentResolver
+RxContentResolver
+-----------------
 
 <b>ContentResolver meets rxjava2!
 
