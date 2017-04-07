@@ -49,7 +49,7 @@ public final class QueryObservable extends Observable<Query> {
     @CheckResult
     @NonNull
     public final <T> Observable<T> mapToOne(@NonNull Function<Cursor, T> mapper) {
-        return new QueryToOne<T>(this,mapper,false,null);
+        return new QueryToOneOperator<T>(this,mapper,false,null);
     }
 
     /**
@@ -76,7 +76,7 @@ public final class QueryObservable extends Observable<Query> {
     @NonNull
     public final <T> Observable<T> mapToOneOrDefault(@NonNull Function<Cursor, T> mapper,
                                                      T defaultValue) {
-        return new QueryToOne<T>(this,mapper,true,defaultValue);
+        return new QueryToOneOperator<T>(this,mapper,true,defaultValue);
     }
 
     /**
@@ -105,16 +105,16 @@ public final class QueryObservable extends Observable<Query> {
 
     @CheckResult
     @NonNull
-    public final <T> Observable<List<T>> mapToList(@NonNull QueryToList.MapperToList<T> mapper) {
-        return  QueryToList.fromMapper(this,mapper);
+    public final <T> Observable<List<T>> mapToList(@NonNull QueryToListOperator.MapperToList<T> mapper) {
+        return  QueryToListOperator.fromMapper(this,mapper);
     }
 
 
 
     @CheckResult
     @NonNull
-    public final <T> Observable<List<T>> mapToList(@NonNull QueryToList.MapperToItem<T>  mapper) {
-        return  QueryToList.fromMapper(this,mapper);
+    public final <T> Observable<List<T>> mapToList(@NonNull QueryToListOperator.MapperToItem<T>  mapper) {
+        return  QueryToListOperator.fromMapper(this,mapper);
     }
 
 

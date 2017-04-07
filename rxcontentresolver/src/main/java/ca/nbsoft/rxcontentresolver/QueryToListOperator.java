@@ -5,88 +5,79 @@ import android.database.Cursor;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.ObservableOperator;
+import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.exceptions.Exceptions;
 import io.reactivex.functions.Function;
 
 /**
+ * Created by Nicolas on 2017-04-04.
  * This class is an rxjava2 port from https://github.com/square/sqlbrite
  */
-final class QueryToListOperator<T> implements ObservableOperator<List<T>, Query> {
-    final Function<Cursor, T> mapper;
 
-    QueryToListOperator(Function<Cursor, T> mapper) {
+public final class QueryToListOperator<T> extends Observable<List<T>> {
+
+    public interface MapperToList<T>
+    {
+        List<T> apply(@NonNull Cursor cursor) throws Exception;
+    }
+    public interface MapperToItem<T>
+    {
+        T apply(@NonNull Cursor cursor) throws Exception;
+    }
+
+    final Observable<Query> source;
+    final MapperToList<T> mapper;
+
+    static public <T> QueryToListOperator<T> fromMapper(Observable<Query> source, MapperToList<T> mapper )
+    {
+        return new QueryToListOperator<T>(source,mapper);
+    }
+
+    static public <T> QueryToListOperator<T> fromMapper(Observable<Query> source, final MapperToItem<T> mapper )
+    {
+        return new QueryToListOperator<T>(source,
+                new MapperToList<T>() {
+                    @Override
+                    public List<T> apply(@NonNull Cursor cursor) throws Exception {
+                        List<T> results = new ArrayList<>();
+                        while (cursor.moveToNext()) {
+                            results.add(mapper.apply(cursor));
+                        }
+                        return results;
+                    }
+                });
+    }
+
+    public QueryToListOperator(Observable<Query> source, MapperToList<T> mapper) {
+        this.source = source;
         this.mapper = mapper;
     }
 
-    /*@Override
-    public Subscriber<? super SqlBrite.Query> call(final Subscriber<? super List<T>> subscriber) {
-        return new Subscriber<SqlBrite.Query>(subscriber) {
-            @Override
-            public void onNext(SqlBrite.Query query) {
-                try {
-                    Cursor cursor = query.run();
-                    if (cursor == null || subscriber.isUnsubscribed()) {
-                        return;
-                    }
-                    List<T> items = new ArrayList<>(cursor.getCount());
-                    try {
-                        while (cursor.moveToNext()) {
-                            items.add(mapper.apply(cursor));
-                        }
-                    } finally {
-                        cursor.close();
-                    }
-                    if (!subscriber.isUnsubscribed()) {
-                        subscriber.onNext(items);
-                    }
-                } catch (Throwable e) {
-                    Exceptions.throwIfFatal(e);
-                    onError(OnErrorThrowable.addValueAsLastCause(e, query.toString()));
-                }
-            }
 
-            @Override
-            public void onComplete() {
-                subscriber.onComplete();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                subscriber.onError(e);
-            }
-        };
-    }*/
 
     @Override
-    public Observer<? super Query> apply(@NonNull final Observer<? super List<T>> observer) throws Exception {
-        return new Observer<Query>() {
+    protected void subscribeActual(final Observer<? super List<T>> observer) {
+
+       /* source.subscribe(new Observer<Query>() {
             @Override
             public void onSubscribe(Disposable d) {
-
+                observer.onSubscribe(d);
             }
 
             @Override
             public void onNext(Query query) {
                 try {
+
                     Cursor cursor = query.run();
-                    if (cursor == null /*|| observer.()*/) {
-                        return;
-                    }
-                    List<T> items = new ArrayList<>(cursor.getCount());
-                    try {
-                        while (cursor.moveToNext()) {
-                            items.add(mapper.apply(cursor));
+                    if (cursor != null) {
+                        try {
+                            observer.onNext(mapper.apply(cursor));
+                        } finally {
+                            cursor.close();
                         }
-                    } finally {
-                        cursor.close();
                     }
-                    /*if (!observer.())*/ {
-                        observer.onNext(items);
-                    }
+
                 } catch (Throwable e) {
                     Exceptions.throwIfFatal(e);
                     //onError(OnErrorThrowable.addValueAsLastCause(e, query.toString()));
@@ -103,6 +94,24 @@ final class QueryToListOperator<T> implements ObservableOperator<List<T>, Query>
             public void onComplete() {
                 observer.onComplete();
             }
-        };
+        });*/
+
+        source.map(new Function<Query, List<T>>() {
+            @Override
+            public List<T> apply(@NonNull Query query) throws Exception {
+                Cursor cursor = query.run();
+                if(cursor==null)
+                {
+                    throw new Exception("Null cursor");
+                }
+                try {
+                    return mapper.apply(cursor);
+                }
+                finally {
+                    cursor.close();
+                }
+
+            }
+        }).subscribe(observer);
     }
 }
