@@ -1,7 +1,7 @@
 RxContentResolver
 -----------------
 
-<b>ContentResolver meets rxjava2!
+<b>ContentResolver meets rxjava2!</b>
 
 This library contain classes extracted from the excellent [SqlBrite](https://github.com/square/sqlbrite) library from square.
 The only reason this library exists is because I needed an rxjava2 version of the BriteContentReslover.
